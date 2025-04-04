@@ -88,38 +88,41 @@ router.put('/:userId', [
 
 });
 
-// router.put('/', [
-//     check('name', 'invalid.name').not().isEmpty(),
-//     check('email', 'invalid.email').isEmail(),
-//     check('state', 'invalid.state').isIn([ 'Active', 'Inactive' ]),
-// ], async function(req, res) {
+router.put('/:userId', [
+    check('name', 'invalid.name').not().isEmpty(),
+    check('email', 'invalid.email').isEmail(),
+    check('state', 'invalid.state').isIn([ 'Active', 'Inactive' ]),
+], async function(req, res) {
     
-//     try {
-//         const errors = validationResult(req);
-//         if (!errors.isEmpty()) {
-//             return res.status(400).json({ message: errors.array() }); //CÓDIGOS DE ESTADO HTTP
-//         }
+    try {
+        const errors = validationResult(req);
+        if (!errors.isEmpty()) {
+            return res.status(400).json({ message: errors.array() }); //CÓDIGOS DE ESTADO HTTP
+        }
 
-//         const userExist = await User.findOne({ email: req.body.email });
-//         if (userExist) {
-//             return res.status(400).send('Exist email');
-//         }
+        let user = await User.findById(req.params.userId);
+        if (!user) {
+            return res.status(400).send('user not exist');
+        }
 
-//         let user = new User();
-//         user.name = req.body.name;
-//         user.email = req.body.email;
-//         user.state = req.body.state;
-//         user.createdAt = new Date();
-//         user.updatedAt = new Date();
+        const userExist = await User.findOne({ email: req.body.email, _id: { $ne: user._id } });
+        if (userExist) {
+            return res.status(400).send('Exist email');
+        }
 
-//         user = await user.save();
-//         res.send(user)
+        user.name = req.body.name;
+        user.email = req.body.email;
+        user.state = req.body.state;
+        user.updatedAt = new Date();
 
-//     } catch (error){
-//         console.log(error);
-//         res.status(500).send('message error')
-//     }
+        user = await user.save();
+        res.send(user)
 
-// });
+    } catch (error){
+        console.log(error);
+        res.status(500).send('message error')
+    }
+
+});
 
 module.exports = router;

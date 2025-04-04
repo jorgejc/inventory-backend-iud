@@ -42,5 +42,34 @@ router.get('/', async function(req, res) {
     }
 });
 
+router.put('/:equipmentTypeId', [
+    check('name', 'invalid.name').not().isEmpty(),
+    check('state', 'invalid.state').isIn([ 'Active', 'Inactive' ]),
+], async function(req, res) {
+    
+    try {
+        const errors = validationResult(req);
+        if (!errors.isEmpty()) {
+            return res.status(400).json({ message: errors.array() }); //CÓDIGOS DE ESTADO HTTP
+        }
+
+        let equipmentType = new EquipmentType.findById(req.params.equipmentTypeId);
+        if (!equipmentType) {
+            return res.status(400).send('Not exist equipment type');
+        }
+        equipmentType.name = req.body.name;
+        equipmentType.state = req.body.state;
+        equipmentType.updatedAt = new Date();
+
+        equipmentType = await equipmentType.save();
+        res.send(equipmentType)
+
+    } catch (error){
+        console.log(error);
+        res.status(500).send('message error')
+    }
+
+});
+
 
 module.exports = router;
